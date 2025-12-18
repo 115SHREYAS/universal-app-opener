@@ -2,8 +2,8 @@ export interface DeepLinkResult {
   webUrl: string;
   ios: string | null;
   android: string | null;
-  platform: 'youtube' | 'linkedin' | 'unknown';
-}
+  platform: 'youtube' | 'linkedin' | 'instagram' | 'unknown';
+} 
 
 export function generateDeepLink(url: string): DeepLinkResult {
   const webUrl = url.trim();
@@ -29,6 +29,17 @@ export function generateDeepLink(url: string): DeepLinkResult {
       ios: `linkedin://in/${profileId}`,
       android: `intent://in/${profileId}#Intent;scheme=linkedin;package=com.linkedin.android;end`,
       platform: 'linkedin'
+    };
+  }
+
+  const isInstagramMatch = webUrl.match(/instagram\.com\/([^/?]+)/);
+  if (isInstagramMatch) {
+    const profileId = isInstagramMatch[1];
+    return {
+      webUrl,
+      ios: `instagram://user?username=${profileId}`,
+      android: `intent://user?username=${profileId}#Intent;scheme=instagram;package=com.instagram.android;end`,
+      platform: 'instagram'
     };
   }
   
