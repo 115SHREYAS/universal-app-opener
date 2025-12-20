@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write 
-      id-token: write # Required for OIDC
+      id-token: write # Required for OIDC/trusted publishing
     
     steps:
       - name: Checkout Code
@@ -35,24 +35,22 @@ jobs:
 
       - name: Sync package.json with Release Tag
         run: |
-          # 1. Clean the tag: "core-v1.1.0" -> "1.1.0"
+          # Clean the tag: "core-v1.1.0" -> "1.1.0"
           TAG_VERSION=${GITHUB_REF_NAME#core-v}
           echo "Release tag is $TAG_VERSION"
           
           cd packages/core
           
-          # 2. Update version in file (This updates package.json locally on the runner)
+          # Update version in package.json
           npm version $TAG_VERSION --no-git-tag-version --allow-same-version
 
       - name: Build Package
         run: pnpm build
 
-      - name: Publish to NPM
-        # We write a dummy token to .npmrc to satisfy pnpm's pre-checks.
-        # The --provenance flag forces the ACTUAL auth to happen via OIDC.
+      - name: Publish to NPM with Trusted Publishing
         run: |
           cd packages/core
-          echo "//registry.npmjs.org/:_authToken=npm_dummy_token" > .npmrc
+          # No .npmrc needed - OIDC handles authentication
           pnpm publish --provenance --access public --no-git-checks
 
       - name: Commit Version Bump
