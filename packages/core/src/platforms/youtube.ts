@@ -22,15 +22,15 @@ function extractYouTubeVideoId(url: string): string | null {
   if (shortMatch) return shortMatch[1];
 
   // Shorts URL
-  const shortsMatch = url.match(/youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/);
+  const shortsMatch = url.match(/(?:www\.)?youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/);
   if (shortsMatch) return shortsMatch[1];
 
   // Embed URL
-  const embedMatch = url.match(/youtube\.com\/embed\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/);
+  const embedMatch = url.match(/(?:www\.)?youtube\.com\/embed\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/);
   if (embedMatch) return embedMatch[1];
 
   // Live URL
-  const liveMatch = url.match(/youtube\.com\/live\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/);
+  const liveMatch = url.match(/(?:www\.)?youtube\.com\/live\/([a-zA-Z0-9_-]{11})(?:[?&#]|$)/);
   if (liveMatch) return liveMatch[1];
 
   return null;
