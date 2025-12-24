@@ -9,11 +9,21 @@ const toggleDeepLinks = document.getElementById('toggleDeepLinks') as HTMLButton
 const deepLinksContent = document.getElementById('deepLinksContent') as HTMLDivElement;
 const exampleLinks = document.querySelectorAll('.example-link');
 
+const whatsappTextOption = document.getElementById('whatsappTextOption') as HTMLDivElement;
+const addMessageCheckbox = document.getElementById('addMessageCheckbox') as HTMLInputElement;
+const whatsappModal = document.getElementById('whatsappModal') as HTMLDivElement;
+const closeModal = document.getElementById('closeModal') as HTMLButtonElement;
+const cancelMessage = document.getElementById('cancelMessage') as HTMLButtonElement;
+const applyMessage = document.getElementById('applyMessage') as HTMLButtonElement;
+const whatsappMessageInput = document.getElementById('whatsappMessageInput') as HTMLTextAreaElement;
+
 let currentResult: ReturnType<typeof generateDeepLink> | null = null;
+let currentUrl: string = '';
 
 function handleLinkClick(url: string) {
   const result = generateDeepLink(url);
   currentResult = result;
+  currentUrl = url;
   displayResult(result);
   openLink(url, { fallbackToWeb: true, fallbackDelay: 2500 });
 }
@@ -21,9 +31,16 @@ function handleLinkClick(url: string) {
 function displayResult(result: ReturnType<typeof generateDeepLink>) {
   jsonOutput.textContent = JSON.stringify(result, null, 2);
   outputSection.classList.remove('hidden');
+
+  if (result.platform === 'whatsapp') {
+    whatsappTextOption.classList.remove('hidden');
+    addMessageCheckbox.checked = false;
+  } else {
+    whatsappTextOption.classList.add('hidden');
+  }
 }
 
-exampleLinks.forEach(link => {
+exampleLinks.forEach((link) => {
   link.addEventListener('click', (e) => {
     e.preventDefault();
     const url = link.getAttribute('data-url');
@@ -35,14 +52,15 @@ exampleLinks.forEach(link => {
 
 generateBtn.addEventListener('click', () => {
   const url = urlInput.value.trim();
-  
+
   if (!url) {
     alert('Please enter a URL');
     return;
   }
-  
+
   const result = generateDeepLink(url);
   currentResult = result;
+  currentUrl = url;
   displayResult(result);
   openBtn.classList.remove('hidden');
 });
@@ -50,7 +68,63 @@ generateBtn.addEventListener('click', () => {
 openBtn.addEventListener('click', () => {
   const url = urlInput.value.trim();
   if (url) {
-    openLink(url, { fallbackToWeb: true, fallbackDelay: 2500 });
+    const result = generateDeepLink(url);
+
+    if (result.platform === 'whatsapp' && addMessageCheckbox.checked) {
+      whatsappModal.classList.remove('hidden');
+      whatsappMessageInput.value = '';
+      whatsappMessageInput.focus();
+    } else {
+      openLink(url, { fallbackToWeb: true, fallbackDelay: 2500 });
+    }
+  }
+});
+
+addMessageCheckbox.addEventListener('change', () => {
+  if (addMessageCheckbox.checked) {
+    whatsappModal.classList.remove('hidden');
+    whatsappMessageInput.value = '';
+    whatsappMessageInput.focus();
+  }
+});
+
+closeModal.addEventListener('click', () => {
+  whatsappModal.classList.add('hidden');
+  addMessageCheckbox.checked = false;
+});
+
+cancelMessage.addEventListener('click', () => {
+  whatsappModal.classList.add('hidden');
+  addMessageCheckbox.checked = false;
+});
+
+applyMessage.addEventListener('click', () => {
+  const message = whatsappMessageInput.value.trim();
+
+  if (message && currentUrl) {
+    const phoneMatch = currentUrl.match(/wa\.me\/\+?(\d+)/);
+    if (phoneMatch) {
+      const phone = phoneMatch[0].replace('wa.me/', '');
+      const urlWithMessage = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+      urlInput.value = urlWithMessage;
+      currentUrl = urlWithMessage;
+
+      const result = generateDeepLink(urlWithMessage);
+      currentResult = result;
+      displayResult(result);
+
+      whatsappModal.classList.add('hidden');
+    }
+  } else {
+    whatsappModal.classList.add('hidden');
+  }
+});
+
+whatsappModal.addEventListener('click', (e) => {
+  if (e.target === whatsappModal) {
+    whatsappModal.classList.add('hidden');
+    addMessageCheckbox.checked = false;
   }
 });
 
@@ -59,7 +133,7 @@ toggleDeepLinks.addEventListener('click', () => {
   deepLinksContent.classList.toggle('hidden');
   const toggleText = toggleDeepLinks.querySelector('.toggle-text') as HTMLElement;
   const toggleIcon = toggleDeepLinks.querySelector('.toggle-icon') as HTMLElement;
-  
+
   if (isHidden) {
     toggleText.textContent = 'Hide Deep Links';
     toggleIcon.textContent = '▲';
@@ -74,4 +148,3 @@ urlInput.addEventListener('keypress', (e) => {
     generateBtn.click();
   }
 });
-

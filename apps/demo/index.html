@@ -55,12 +55,41 @@
       
       <div id="outputSection" class="output-section hidden">
         <h2>Generated Deep Links</h2>
+        
+        <div id="whatsappTextOption" class="whatsapp-text-option hidden">
+          <label class="checkbox-label">
+            <input type="checkbox" id="addMessageCheckbox" />
+            <span>Add pre-filled message</span>
+          </label>
+        </div>
+        
         <button id="toggleDeepLinks" class="toggle-btn">
           <span class="toggle-text">Show Deep Links</span>
           <span class="toggle-icon">▼</span>
         </button>
         <div id="deepLinksContent" class="deep-links-content hidden">
           <pre id="jsonOutput" class="json-output"></pre>
+        </div>
+      </div>
+    </div>
+    
+    <!-- WhatsApp Text Modal -->
+    <div id="whatsappModal" class="modal hidden">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Add Pre-filled Message</h3>
+          <button id="closeModal" class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <textarea 
+            id="whatsappMessageInput" 
+            placeholder="Enter your message here..."
+            rows="4"
+          ></textarea>
+        </div>
+        <div class="modal-footer">
+          <button id="cancelMessage" class="cancel-btn">Cancel</button>
+          <button id="applyMessage" class="apply-btn">Apply</button>
         </div>
       </div>
     </div>
