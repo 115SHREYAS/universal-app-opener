@@ -2,7 +2,7 @@ import { DeepLinkHandler } from '../types';
 
 export const threadsHandler: DeepLinkHandler = {
   match: (url) =>
-    url.match(/threads\.net\/@([^/?]+)/),
+    url.match(/^https?:\/\/(?:www\.)?threads\.net\/@([^/?]+)/),
 
   build: (webUrl, match) => {
     const username = match[1];
