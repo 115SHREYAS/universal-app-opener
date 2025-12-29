@@ -1,42 +1,40 @@
-import { DeepLinkHandler } from '../types';
+import { DeepLinkHandler, Platform } from '../types';
 
 export const githubHandler: DeepLinkHandler = {
   match: (url) =>
-    url.match(/github\.com\/([^\/\?#]+)(?:\/([^\/\?#]+)(?:\/([^\/\?#]+)\/([^\?#]+))?)?/),
+    url.match(
+      /^https?:\/\/(?:www\.)?github\.com\/([^\/?#]+)\/?([^\/?#]+)?\/?([^\/?#]+)?\/?([^\/?#]+)?/,
+    ),
 
   build: (webUrl, match) => {
-    const [owner, repo, type, remainder] = match;
-
-    const subRoutes: Record<string, { ios: string; android: string }> = {
-      pull: { ios: 'pull', android: 'pull' },
-      blob: { ios: 'blob', android: 'blob' },
-      issues: { ios: 'issue', android: 'issues' },
+    const [, owner, repo, type, id] = match;
+    const routeMap: Record<string, string> = {
+      pull: 'pull',
+      issues: 'issues',
+      blob: 'blob',
     };
 
-    if (repo && type && remainder && subRoutes[type]) {
-      const route = subRoutes[type];
-      return {
-        webUrl,
-        ios: `github://repo/${owner}/${repo}/${route.ios}/${remainder}`,
-        android: `intent://github.com/${owner}/${repo}/${route.android}/${remainder}#Intent;scheme=https;package=com.github.android;end`,
-        platform: 'github',
-      };
-    }
+    if (!repo) return createDeepLinks(webUrl, `user/${owner}`, owner);
 
-    if (repo) {
-      return {
+    // for PR, Issues, Blob
+    const route = routeMap[type ?? ''];
+    if (route && id)
+      return createDeepLinks(
         webUrl,
-        ios: `github://repo/${owner}/${repo}`,
-        android: `intent://github.com/${owner}/${repo}#Intent;scheme=https;package=com.github.android;end`,
-        platform: 'github',
-      };
-    }
+        `repo/${owner}/${repo}/${route}/${id}`,
+        `${owner}/${repo}/${route}/${id}`,
+      );
 
-    return {
-      webUrl,
-      ios: `github://user/${owner}`,
-      android: `intent://github.com/${owner}#Intent;scheme=https;package=com.github.android;end`,
-      platform: 'github',
-    };
+    // for repo
+    return createDeepLinks(webUrl, `repo/${owner}/${repo}`, `${owner}/${repo}`);
   },
 };
+
+function createDeepLinks(webUrl: string, iosPath: string, androidPath: string) {
+  return {
+    webUrl,
+    ios: `github://${iosPath}`,
+    android: `intent://github.com/${androidPath}#Intent;scheme=https;package=com.github.android;end`,
+    platform: 'github' as Platform,
+  };
+}
